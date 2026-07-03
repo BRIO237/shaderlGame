@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dog Snake Game</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#000000;
+    font-family:Arial,Helvetica,sans-serif;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+#container{
+    text-align:center;
+}
+
+#hud{
+    width:640px;
+    display:flex;
+    justify-content:space-between;
+    background:#ffffff;
+    color:rgb(0, 0, 0);
+    padding:12px;
+    border-radius:10px;
+    margin-bottom:10px;
+    font-size:22px;
+    font-weight:bold;
+}
+
+canvas{
+    background:#000000;
+    border:6px solid #ffffff;
+    border-radius:10px;
+}
+</style>
+
+</head>
+<body>
+
+<div id="container">
+
+<div id="hud">
+<div>Score: <span id="score">0</span></div>
+<div>Money: $<span id="money">0</span></div>
+<div>Level: <span id="level">1</span></div>
+</div>
+
+<canvas id="game" width="640" height="350"></canvas>
+
+</div>
+
+<script>
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const grid = 32;
+const cols = 20; // 640 / 32 = 20
+const rows = 10; // 350 / 32 ≈ 10
+
+let score = 0;
+let money = 0;
+let level = 1;
+
+let dog = { x: 10, y: 10 };
+let bone = randomPos();
+
+let dx = 0;
+let dy = 0;
+
+let started = false;
+
+/* =========================
+   CONTROLS
+========================= */
+document.addEventListener("keydown", (e) => {
+
+    if (e.key === "ArrowUp") {
+        dx = 0; dy = -1; started = true;
+        moveDog();
+    }
+    if (e.key === "ArrowDown") {
+        dx = 0; dy = 1; started = true;
+        moveDog();
+    }
+    if (e.key === "ArrowLeft") {
+        dx = -1; dy = 0; started = true;
+        moveDog();
+    }
+    if (e.key === "ArrowRight") {
+        dx = 1; dy = 0; started = true;
+        moveDog();
+    }
+});
+
+/* =========================
+   MOVE DOG
+========================= */
+function moveDog() {
+
+    let newX = dog.x + dx;
+    let newY = dog.y + dy;
+
+  
+    // Wrap around the walls
+    if (newX < 0) newX = cols - 1;
+    if (newX >= cols) newX = 0;
+
+    if (newY < 0) newY = rows - 1;
+    if (newY >= rows) newY = 0;
+
+    dog.x = newX;
+    dog.y = newY;
+
+    // EAT BONE
+    if (dog.x === bone.x && dog.y === bone.y) {
+        score++;
+        money += 5;
+        bone = randomPos();
+
+        if (score % 10 === 0) {
+            level++;
+        }
+    }
+
+    updateHUD();
+}
+
+/* =========================
+   GAME OVER
+========================= */
+function gameOver() {
+    alert("💀 Game Over! You hit the wall.");
+
+    dog = { x: 10, y: 10 };
+    dx = 0;
+    dy = 0;
+    started = false;
+
+    score = 0;
+    level = 1;
+}
+
+/* =========================
+   RANDOM POSITION
+========================= */
+function randomPos() {
+    return {
+        x: Math.floor(Math.random() * cols),
+        y: Math.floor(Math.random() * rows)
+    };
+}
+
+/* =========================
+   HUD
+========================= */
+function updateHUD() {
+    document.getElementById("score").textContent = score;
+    document.getElementById("money").textContent = money;
+    document.getElementById("level").textContent = level;
+}
+
+/* =========================
+   DRAW (SMALLER GRID LOOK FIX)
+========================= */
+function draw() {
+
+   ctx.clearRect(0, 0, 640, 350);
+
+    // smaller / cleaner background grid
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            // Black background
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+         
+
+        }
+    }
+
+    // BONE
+    ctx.font = "26px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("🦴", bone.x * grid + 16, bone.y * grid + 16);
+
+    // DOG
+    ctx.fillText("🐶", dog.x * grid + 16, dog.y * grid + 16);
+}
+
+/* =========================
+   LOOP
+========================= */
+function loop() {
+    draw();
+}
+
+setInterval(loop, 1000 / 30);
+
+</script>
+
+</body>
+</html>
